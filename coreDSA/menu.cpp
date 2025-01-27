@@ -33,10 +33,9 @@ void displayMenu(menu *&head)
     menu *temp = head;
     while(temp != NULL)
     {
-        cout << temp->data << " " << temp->price << endl;
+        cout <<"| "<< temp->data << " | " << " "<< temp->price<<" |" << endl;
         temp = temp->next;
     }
-    
 }
 menu* getMiddle(menu* head)
  {
