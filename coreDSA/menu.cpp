@@ -1,99 +1,114 @@
 #include <iostream>
+#include <limits>
 using namespace std;
 
-
-struct menu
-{
+struct menu {
     string data;
     float price;
+    int id;
+    string category;
     menu *next;
 
-void insertItem(string data, float price, menu *&head)
-{
-    menu *temp = new menu;
-    temp->data = data;
-    temp->price = price;
-    temp->next = NULL;
-    if(head == NULL)
-    {
-        head = temp;
-    }
-    else
-    {
-        menu *temp1 = head;
-        while(temp1->next != NULL)
-        {
-            temp1 = temp1->next;
+    static int next_id;
+
+    void insertItem(string data, float price, string category, menu *&head) {
+        menu *temp = new menu;
+        temp->data = data;
+        temp->price = price;
+        temp->category = category;
+        temp->next = nullptr;
+        temp->id = ++next_id;
+
+        if (head == nullptr) {
+            head = temp;
+        } else {
+            menu *temp1 = head;
+            while (temp1->next != nullptr) {
+                temp1 = temp1->next;
+            }
+            temp1->next = temp;
         }
-        temp1->next = temp;
     }
-}
-void displayMenu(menu *&head)
-{
-    menu *temp = head;
-    while(temp != NULL)
+
+    void displayMenu(const menu *head) {
+        const menu *temp = head;
+        while (temp != nullptr) {
+            cout << "| " << temp->data << " | " << temp->price << "| "<<temp->category<<" "<<temp->id << endl;
+            temp = temp->next;
+        }
+    }
+    void search(string name,menu*&head)
     {
-        cout <<"| "<< temp->data << " | " << " "<< temp->price<<" |" << endl;
-        temp = temp->next;
-    }
-}
-menu* getMiddle(menu* head)
- {
-    if (head == nullptr || head->next == nullptr) {
-        return head;
-    }
+      int   i=0;
+        menu* temp=head;
+        while(i<4)
+        {
+            while(temp!=nullptr)
+            {
+                if(temp->data[i]==name[i])
+                {
+                    cout<<temp->data<<" "<<temp->price<<" "<<temp->category<<" "<<temp->id<<endl;
+                }
+                temp=temp->next;
+            }
+            i++;
 
-    menu* slow = head;
-    menu* fast = head->next;
-
-    while (fast != nullptr && fast->next != nullptr) {
-        slow = slow->next;
-        fast = fast->next->next;
-    }
-
-    return slow;
-}
-    // Helper function to find the middle of the list
-menu* mergeP(menu* left, menu* right) {
-    if (left == nullptr) {
-        return right;
-    }
-    if (right == nullptr) {
-        return left;
+        }
     }
 
-    menu* result = nullptr;
+    menu* getMiddle(menu* head) {
+        if (head == nullptr || head->next == nullptr) {
+            return head;
+        }
 
-    // Compare based on the price
-    if (left->price <= right->price) {
-        result = left;
-        result->next = mergeP(left->next, right);
-    } else {
-        result = right;
-        result->next = mergeP(left, right->next);
+        menu* slow = head;
+        menu* fast = head->next;
+
+        while (fast != nullptr && fast->next != nullptr) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+
+        return slow;
     }
 
-    return result;
-}
-menu* mergeSortP(menu* head) {
-    if (head == nullptr || head->next == nullptr) {
-        return head; // Base case: 0 or 1 node is already sorted
+    menu* mergeP(menu* left, menu* right) {
+        if (left == nullptr) {
+            return right;
+        }
+        if (right == nullptr) {
+            return left;
+        }
+
+        menu* result = nullptr;
+
+        if (left->price <= right->price) {
+            result = left;
+            result->next = mergeP(left->next, right);
+        } else {
+            result = right;
+            result->next = mergeP(left, right->next);
+        }
+
+        return result;
     }
 
-    // Split the list into two halves
-    menu* middle = getMiddle(head);
-    menu* nextToMiddle = middle->next;
+    menu* mergeSortP(menu* head) {
+        if (head == nullptr || head->next == nullptr) {
+            return head;
+        }
 
-    middle->next = nullptr; // Break the list into two halves
+        menu* middle = getMiddle(head);
+        menu* nextToMiddle = middle->next;
 
-    // Recursively sort both halves
-    menu* left = mergeSortP(head);
-    menu* right = mergeSortP(nextToMiddle);
+        middle->next = nullptr;
 
-    // Merge the sorted halves
-    return mergeP(left, right);
-}
- // Helper function to merge two sorted linked lists
+        menu* left = mergeSortP(head);
+        menu* right = mergeSortP(nextToMiddle);
+
+        return mergeP(left, right);
+    }
+
     menu* mergeA(menu* left, menu* right) {
         if (left == nullptr) {
             return right;
@@ -104,7 +119,6 @@ menu* mergeSortP(menu* head) {
 
         menu* result = nullptr;
 
-        // Compare based on the `data` field (alphabetical order)
         if (left->data <= right->data) {
             result = left;
             result->next = mergeA(left->next, right);
@@ -115,75 +129,128 @@ menu* mergeSortP(menu* head) {
 
         return result;
     }
-    // Merge sort function
+
     menu* mergeSortA(menu* head) {
         if (head == nullptr || head->next == nullptr) {
-            return head; // Base case: 0 or 1 node is already sorted
+            return head;
         }
 
-        // Split the list into two halves
         menu* middle = getMiddle(head);
         menu* nextToMiddle = middle->next;
-        middle->next = nullptr; // Break the list into two halves
+        middle->next = nullptr;
 
-        // Recursively sort both halves
         menu* left = mergeSortA(head);
         menu* right = mergeSortA(nextToMiddle);
 
-        // Merge the sorted halves
         return mergeA(left, right);
     }
-void sortInPrice(menu *head)
-{
 
-    head = mergeSortP(head);
-    displayMenu(head);
-
-}
- void sortInAlphabet(menu* &head)
- {
-
-    head = mergeSortA(head);
-    displayMenu(head);
-}
- void deleteItem(string data, menu *&head)
- {
-    menu *temp=head;
-    while(temp->next->data !=data)
-    {
-        temp=temp->next;
+    void sortInPrice(menu *&head) {
+        head = mergeSortP(head);
+        displayMenu(head);
     }
-    menu *temp1=temp->next;
-    temp->next=temp->next->next;
-    delete temp1;    
- }
 
+    void sortInAlphabet(menu *&head) {
+        head = mergeSortA(head);
+        displayMenu(head);
+    }
+
+    void deleteItem(string data, menu *&head) {
+        if (head == nullptr) return;
+        if (head->data == data) {
+            menu *temp = head;
+            head = head->next;
+            delete temp;
+            return;
+        }
+
+        menu *temp = head;
+        while (temp->next != nullptr && temp->next->data != data) {
+            temp = temp->next;
+        }
+
+        if (temp->next == nullptr) return;
+
+        menu *temp1 = temp->next;
+        temp->next = temp->next->next;
+        delete temp1;
+    }
 };
 
-int main()
-{
-    menu* head = NULL;
-    menu m;
-    m.data = "Burger";
-    m.price = 5.99;
-    m.insertItem(m.data, m.price, head);
-    m.data = "Pizza";
-    m.price = 7.99;
-    m.insertItem(m.data, m.price, head);
-    m.data = "Pasta";
-    m.price = 6.99;
-    m.insertItem(m.data, m.price, head);
-    m.data = "Sandwich";
-    m.price = 4.99;
-    m.insertItem(m.data, m.price, head);
-    m.displayMenu(head);
-    cout << "After sorting in price" << endl;
-    m.sortInPrice(head);
-    cout << "After sorting in Alphabet" << endl;
-    m.sortInAlphabet(head);
-    cout << "After deleting an item" << endl;
-    m.deleteItem("Pizza", head);
-    m.displayMenu(head);
-    return 0;
+int menu::next_id = 0; // Initialize the static variable
 
+void MenuChoose(menu *&head);
+
+void back(menu*& head) {
+    cout << "Would you like to go back to the menu? (Enter y/n): ";
+    char answer;
+    cin >> answer;
+    if (answer == 'y' || answer == 'Y') {
+         system("CLS");  // Avoid or handle this for platform compatibility
+        MenuChoose(head);
+    } else {
+         system("CLS");  // Avoid or handle this for platform compatibility
+        return;
+    }
+}
+
+void MenuChoose(menu *&head) {
+    cout << "<<<<<<<<<<<<<<<<<<<<menu>>>>>>>>>>>>>>>\n";
+    cout << "1. Add Menu Item\n2. Remove Menu Item\n3. List Menu Items by Alphabet\n4. List Menu Items by Price\n";
+    cout << "5. Search Menu Item\n6. Edit Menu Item\n";
+
+    int option;
+    string name;
+    string category;
+    float price;
+    cin >> option;
+
+    switch (option) {
+        case 1:
+            cout << "Please Enter the following queries\nItem Name: ";
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
+            getline(cin, name);
+            cout << "\nCategory: ";
+            getline(cin, category);
+            cout << "\nPrice: ";
+            cin >> price;
+            head->insertItem(name, price, category, head);
+            break;
+        
+        case 2:
+            cout << "Which item do you want to remove? ";
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Clear input buffer
+            getline(cin, name);
+            // system("CLS");  // Avoid or handle this for platform compatibility
+            head->deleteItem(name, head);
+            break;
+
+        case 3:
+            // system("CLS");  // Avoid or handle this for platform compatibility
+            head->sortInAlphabet(head);
+            break;
+
+        case 4:
+            // system("CLS");  // Avoid or handle this for platform compatibility
+            head->sortInPrice(head);
+            break;
+        case 5:
+            cout<<"Enter the name\n\n";
+            cin>>name;
+            head->search(name,head);
+            break;
+
+
+        default: 
+            cout << "Invalid option, please try again.\n";
+            break;
+    }
+    
+    back(head);
+}
+
+int main() {
+    menu* head = nullptr;
+    MenuChoose(head);
+    return 0;
 }
